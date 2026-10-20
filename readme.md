@@ -10,4 +10,4 @@ Implements 7 different forms of Matrix Multiplication:
 6. Nvidia CUDA C++ Naive MatMul (1 thread per output element)
 7. Nvidia CUDA C++ tiled MatMul (1 thread per output element, but groups threads into localized "blocks" that cooperatively load tiles of input matrices to increase gpu cache usage and decrease global memory traffic)
 
-:)
+:):+
