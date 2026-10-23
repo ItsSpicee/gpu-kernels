@@ -2,17 +2,25 @@ from torch.utils.cpp_extension import load
 import torch
 import triton
 import time
+from pathlib import Path
+import os
 
+SIZE = 1024
+
+CUDA_LIB_DIR = str(
+    Path(os.environ["CONDA_PREFIX"]) / "Library" / "lib"
+)
 
 def naive_bench(iterations):
 
-    A = torch.full((size, size), 2.0, dtype=torch.float32, device="cuda")
-    B = torch.full((size, size), 2.0, dtype=torch.float32, device="cuda")
-    C = torch.empty((M, N), device = A.device, dtype = A.dtype) #use the same device as A (same gpu)
+    A = torch.full((SIZE, SIZE), 2.0, dtype=torch.float32, device="cuda")
+    B = torch.full((SIZE, SIZE), 2.0, dtype=torch.float32, device="cuda")
+    C = torch.empty((SIZE, SIZE), device = A.device, dtype = A.dtype) #use the same device as A (same gpu)
 
     cuda_naive = load(
         name="cuda_naive",
-        sources=["cuda_C++_naive_matmul.cu"]
+        sources=["cuda_C++_naive_matmul.cu"],
+        extra_ldflags=[f"/LIBPATH:{CUDA_LIB_DIR}", "cudart.lib"],
     )
 
     torch.cuda.synchronize()
@@ -34,13 +42,14 @@ def naive_bench(iterations):
 
 def tiled_bench(iterations):
 
-    A = torch.full((size, size), 2.0, dtype=torch.float32, device="cuda")
-    B = torch.full((size, size), 2.0, dtype=torch.float32, device="cuda")
-    C = torch.empty((M, N), device = A.device, dtype = A.dtype) #use the same device as A (same gpu)
+    A = torch.full((SIZE, SIZE), 2.0, dtype=torch.float32, device="cuda")
+    B = torch.full((SIZE, SIZE), 2.0, dtype=torch.float32, device="cuda")
+    C = torch.empty((SIZE, SIZE), device = A.device, dtype = A.dtype) #use the same device as A (same gpu)
 
     cuda_tiled = load(
-        name="cuda_tiled,
-        sources=["cuda_C++_tiled_matmul.cu"]
+        name="cuda_tiled",
+        sources=["cuda_C++_tiled_matmul.cu"],
+        extra_ldflags=[f"/LIBPATH:{CUDA_LIB_DIR}", "cudart.lib"],
     )
 
     torch.cuda.synchronize()

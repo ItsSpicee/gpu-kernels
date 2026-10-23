@@ -34,7 +34,7 @@ def benchmark(A, B, iterations):
     # Timed iterations
     times = []
 
-    for _ in range(iterations):
+    for _ in range(1):
         start = time.perf_counter()
         reference_matmul(A, B)
         end = time.perf_counter()

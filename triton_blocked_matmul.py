@@ -1,7 +1,7 @@
 import torch
 import triton
 import triton.language as tl
-
+import time
 
 BLOCK_SIZE_M = 32
 BLOCK_SIZE_N = 32
