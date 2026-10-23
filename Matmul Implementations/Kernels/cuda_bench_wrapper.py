@@ -7,9 +7,14 @@ import os
 
 SIZE = 1024
 
-CUDA_LIB_DIR = str(
-    Path(os.environ["CONDA_PREFIX"]) / "Library" / "lib"
-)
+def cuda_link_options():
+    """Return linker overrides for Conda; use PyTorch defaults otherwise."""
+    conda_prefix = os.environ.get("CONDA_PREFIX")
+    if not conda_prefix:
+        return {}
+
+    cuda_lib_dir = Path(conda_prefix) / "Library" / "lib"
+    return {"extra_ldflags": [f"/LIBPATH:{cuda_lib_dir}", "cudart.lib"]}
 
 def naive_bench(iterations):
 
@@ -20,7 +25,7 @@ def naive_bench(iterations):
     cuda_naive = load(
         name="cuda_naive",
         sources=[str(Path(__file__).resolve().parent / "cuda_C++_naive_matmul.cu")],
-        extra_ldflags=[f"/LIBPATH:{CUDA_LIB_DIR}", "cudart.lib"],
+        **cuda_link_options(),
     )
 
     torch.cuda.synchronize()
@@ -49,7 +54,7 @@ def tiled_bench(iterations):
     cuda_tiled = load(
         name="cuda_tiled",
         sources=[str(Path(__file__).resolve().parent / "cuda_C++_tiled_matmul.cu")],
-        extra_ldflags=[f"/LIBPATH:{CUDA_LIB_DIR}", "cudart.lib"],
+        **cuda_link_options(),
     )
 
     torch.cuda.synchronize()

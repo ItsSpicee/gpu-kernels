@@ -92,23 +92,27 @@ The benchmark produces two CSV files:
 
 ## CUDA Library Path Note
 
-The CUDA library path in `Matmul Implementations/Kernels/cuda_bench_wrapper.py` is configured relative to the active Conda environment using `CONDA_PREFIX`:
+The CUDA extension wrapper supplies Conda-specific linker flags only when `CONDA_PREFIX` is set. Outside Conda, it leaves `extra_ldflags` out of the extension loader call so PyTorch uses its defaults:
 
 ```python
 from pathlib import Path
 import os
 
-CUDA_LIB_DIR = str(
-    Path(os.environ["CONDA_PREFIX"]) / "Library" / "lib"
-)
+conda_prefix = os.environ.get("CONDA_PREFIX")
+if conda_prefix:
+    cuda_lib_dir = Path(conda_prefix) / "Library" / "lib"
+    cuda_link_options = {
+        "extra_ldflags": [f"/LIBPATH:{cuda_lib_dir}", "cudart.lib"]
+    }
+else:
+    cuda_link_options = {}
 ```
 
-The CUDA extension build passes this directory to the linker:
+The wrapper expands these options into `load()` only for Conda environments:
 
 ```python
-extra_ldflags=[f"/LIBPATH:{CUDA_LIB_DIR}", "cudart.lib"],
+**cuda_link_options,
 ```
 
-This configuration worked for my setup because CUDA Toolkit 12.6 was installed inside the `gpukernels` Conda environment, where `cudart.lib` was located in `Library/lib`.
+This configuration worked for my setup because CUDA Toolkit 12.6 was installed inside the `gpukernels` Conda environment, where `cudart.lib` was located in `Library/lib`. Most like trying to run this repo on your own will require tweaking the path to your cudart.lib file.
 
-Users who do not use Conda will encounter a build error or because their CUDA runtime library is installed in a different directory. 
