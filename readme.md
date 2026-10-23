@@ -94,7 +94,7 @@ Install NumPy and Ninja:
 python -m pip install numpy ninja
 ```
 
-### 5. Configure the 64-bit Visual Studio Build Environment
+### 5. Configure the 64-bit Visual Studio Build Environment (needs to be ran for every new terminal)
 
 Run the following command in PowerShell to initialize the Visual Studio 2022 developer environment for 64-bit compilation:
 
