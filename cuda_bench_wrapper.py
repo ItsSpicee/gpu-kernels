@@ -33,7 +33,7 @@ def naive_bench(iterations):
     times = [
         triton.testing.do_bench_cudagraph(
             lambda: cuda_naive.naive_matmul(A, B, C)
-        )
+        ) / 1000.0  # CUDA graph milliseconds -> benchmark seconds.
         for _ in range(iterations)
     ]
 
@@ -62,7 +62,7 @@ def tiled_bench(iterations):
     times = [
         triton.testing.do_bench_cudagraph(
             lambda: cuda_tiled.tiled_matmul(A, B, C)
-        )
+        ) / 1000.0  # CUDA graph milliseconds -> benchmark seconds.
         for _ in range(iterations)
     ]
 

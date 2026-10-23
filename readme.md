@@ -1,5 +1,46 @@
 GPU Kernels Exploratory Analysis
 
+All benchmark functions return `(warmup_seconds, iteration_times_seconds)`
+(PyTorch returns a dictionary with CPU/GPU entries in the same format).
+CPU timings and synchronized GPU warm-ups use `time.perf_counter()` in seconds.
+GPU samples use `triton.testing.do_bench_cudagraph()`, whose millisecond results
+are converted to seconds immediately. Each GPU sample is an average over graph
+replays, whereas each CPU sample measures one call. Warm-ups are measured separately
+and excluded from sample statistics.
+
+The summary and raw CSV writers convert seconds to milliseconds for all timing
+columns. Regenerate existing CSVs with `python benchmark.py --skip-python`:
+GPU sample timings exported before this fix may be inflated by 1,000; CPU and
+warm-up timings were already in the correct units.
+
+To repair the historical CSVs without rerunning the benchmarks:
+
+```powershell
+python correct_legacy_timings.py
+```
+
+This writes `benchmark_results_corrected.csv` and
+`benchmark_raw_logs_corrected.csv`, preserving the originals. Only GPU execution
+samples and their summary statistics are divided by 1,000. CPU timings and
+warm-ups stay unchanged. Existing outputs are never overwritten. Use this script
+only for old, mixed-unit results; new benchmark runs already export correct units.
+
+To graph the corrected summary (requires Matplotlib):
+
+```powershell
+python -m pip install matplotlib
+python plot_timings.py
+```
+
+The plot saves `benchmark_timings.png` and `benchmark_timings.svg`. It shows mean
+execution time on a logarithmic axis, with one-standard-deviation whiskers and
+sample counts. Warm-ups are excluded; single samples have no whiskers. For a new
+benchmark run, plot its already-correct summary directly:
+
+```powershell
+python plot_timings.py --input benchmark_results.csv --output new_timings.png
+```
+
 Implements 7 different forms of Matrix Multiplication:
 
 1. Pure Python CPU Implementation Using for loops and arrays

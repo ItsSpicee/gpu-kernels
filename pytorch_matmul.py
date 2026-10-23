@@ -39,6 +39,7 @@ def benchmark_gpu(A, B, iterations):
 
     times = [
         triton.testing.do_bench_cudagraph(lambda: torch.matmul(A_gpu, B_gpu))
+        / 1000.0  # CUDA graph milliseconds -> benchmark seconds.
         for _ in range(iterations)
     ]
     return warmup, times

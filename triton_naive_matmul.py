@@ -86,9 +86,8 @@ def main(iterations):
                 B.stride(0), B.stride(1),
                 C.stride(0), C.stride(1)
             )
-        )
+        ) / 1000.0  # CUDA graph milliseconds -> benchmark seconds.
         for _ in range(iterations)
     ]
 
     return warmup, times
-   

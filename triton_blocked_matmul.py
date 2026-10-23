@@ -117,9 +117,8 @@ def main(iterations):
                 BLOCK_SIZE_N,
                 BLOCK_SIZE_K
             )
-        )
+        ) / 1000.0  # CUDA graph milliseconds -> benchmark seconds.
         for _ in range(iterations)
     ]
 
     return warmup, times
-   
