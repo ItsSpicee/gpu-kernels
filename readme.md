@@ -1,45 +1,5 @@
 GPU Kernels Exploratory Analysis
 
-All benchmark functions return `(warmup_seconds, iteration_times_seconds)`
-(PyTorch returns a dictionary with CPU/GPU entries in the same format).
-CPU timings and synchronized GPU warm-ups use `time.perf_counter()` in seconds.
-GPU samples use `triton.testing.do_bench_cudagraph()`, whose millisecond results
-are converted to seconds immediately. Each GPU sample is an average over graph
-replays, whereas each CPU sample measures one call. Warm-ups are measured separately
-and excluded from sample statistics.
-
-The summary and raw CSV writers convert seconds to milliseconds for all timing
-columns. Regenerate existing CSVs with `python benchmark.py --skip-python`:
-GPU sample timings exported before this fix may be inflated by 1,000; CPU and
-warm-up timings were already in the correct units.
-
-To repair the historical CSVs without rerunning the benchmarks:
-
-```powershell
-python correct_legacy_timings.py
-```
-
-This writes `benchmark_results_corrected.csv` and
-`benchmark_raw_logs_corrected.csv`, preserving the originals. Only GPU execution
-samples and their summary statistics are divided by 1,000. CPU timings and
-warm-ups stay unchanged. Existing outputs are never overwritten. Use this script
-only for old, mixed-unit results; new benchmark runs already export correct units.
-
-To graph the corrected summary (requires Matplotlib):
-
-```powershell
-python -m pip install matplotlib
-python plot_timings.py
-```
-
-The plot saves `benchmark_timings.png` and `benchmark_timings.svg`. It shows mean
-execution time on a logarithmic axis, with one-standard-deviation whiskers and
-sample counts. Warm-ups are excluded; single samples have no whiskers. For a new
-benchmark run, plot its already-correct summary directly:
-
-```powershell
-python plot_timings.py --input benchmark_results.csv --output new_timings.png
-```
 
 Implements 7 different forms of Matrix Multiplication:
 
@@ -51,7 +11,8 @@ Implements 7 different forms of Matrix Multiplication:
 6. Nvidia CUDA C++ Naive MatMul (1 thread per output element)
 7. Nvidia CUDA C++ tiled MatMul (1 thread per output element, but groups threads into localized "blocks" that cooperatively load tiles of input matrices to increase gpu cache usage and decrease global memory traffic)
 
-:):+
+CPU timings and synchronized GPU warm-ups use `time.perf_counter()`.
+GPU samples use `triton.testing.do_bench_cudagraph()`.
 
 # Installation
 
@@ -94,7 +55,7 @@ Install NumPy and Ninja:
 python -m pip install numpy ninja
 ```
 
-### 5. Configure the 64-bit Visual Studio Build Environment (needs to be ran for every new terminal)
+### 5. Configure the 64-bit Visual Studio Build Environment
 
 Run the following command in PowerShell to initialize the Visual Studio 2022 developer environment for 64-bit compilation:
 
@@ -118,12 +79,20 @@ python benchmark.py --iterations 10 --skip-python
 
 The benchmark produces two CSV files:
 
-- `benchmark_results.csv` — summary statistics for each implementation.
-- `benchmark_raw_logs.csv` — warm-up and individual iteration timings.
+- `Data/benchmark_results.csv` — summary statistics for each implementation.
+- `Data/benchmark_raw_logs.csv` — warm-up and individual iteration timings.
+
+## Project layout
+
+- `Matmul Implementations/python_matmul.py` — pure Python implementation.
+- `Matmul Implementations/Kernels/` — Triton kernels, CUDA C++ kernels, and the CUDA benchmark wrapper.
+- `Matmul Implementations/Libraries/` — NumPy and PyTorch implementations.
+- `Data/` — benchmark summary and raw timing CSV files.
+- `Visuals/` — plotting script, logos, and generated figures.
 
 ## CUDA Library Path Note
 
-The CUDA library path in `cuda_bench_wrapper.py` is configured relative to the active Conda environment using `CONDA_PREFIX`:
+The CUDA library path in `Matmul Implementations/Kernels/cuda_bench_wrapper.py` is configured relative to the active Conda environment using `CONDA_PREFIX`:
 
 ```python
 from pathlib import Path
@@ -142,4 +111,4 @@ extra_ldflags=[f"/LIBPATH:{CUDA_LIB_DIR}", "cudart.lib"],
 
 This configuration worked for my setup because CUDA Toolkit 12.6 was installed inside the `gpukernels` Conda environment, where `cudart.lib` was located in `Library/lib`.
 
-Users who do not use Conda may encounter a build error because `CONDA_PREFIX` may not be defined, or because their CUDA runtime library is installed in a different directory. The linker configuration assumes the library is located at the path constructed from the active Conda environment.
+Users who do not use Conda will encounter a build error or because their CUDA runtime library is installed in a different directory. 

@@ -2,6 +2,15 @@
 import argparse
 import csv
 import statistics
+import sys
+from pathlib import Path
+
+IMPLEMENTATIONS_DIR = Path(__file__).resolve().parent / "Matmul Implementations"
+sys.path[:0] = [
+    str(IMPLEMENTATIONS_DIR),
+    str(IMPLEMENTATIONS_DIR / "Kernels"),
+    str(IMPLEMENTATIONS_DIR / "Libraries"),
+]
 
 import python_matmul
 import numpy_matmul
@@ -10,6 +19,7 @@ import triton_blocked_matmul
 import triton_naive_matmul
 import cuda_bench_wrapper
 
+DATA_DIR = Path(__file__).resolve().parent / "Data"
 
 
 def positive_int(value):
@@ -109,7 +119,7 @@ def expand_results(results):
 
 def save_results_csv(
     results,
-    filename="benchmark_results.csv",
+    filename=DATA_DIR / "benchmark_results.csv",
 ):
     """Save summary statistics for each implementation."""
     fieldnames = [
@@ -152,7 +162,7 @@ def save_results_csv(
 
 def save_raw_logs(
     results,
-    filename="benchmark_raw_logs.csv",
+    filename=DATA_DIR / "benchmark_raw_logs.csv",
 ):
     """Save warm-up and individual iteration timings."""
     fieldnames = [

@@ -19,7 +19,7 @@ def naive_bench(iterations):
 
     cuda_naive = load(
         name="cuda_naive",
-        sources=["cuda_C++_naive_matmul.cu"],
+        sources=[str(Path(__file__).resolve().parent / "cuda_C++_naive_matmul.cu")],
         extra_ldflags=[f"/LIBPATH:{CUDA_LIB_DIR}", "cudart.lib"],
     )
 
@@ -48,7 +48,7 @@ def tiled_bench(iterations):
 
     cuda_tiled = load(
         name="cuda_tiled",
-        sources=["cuda_C++_tiled_matmul.cu"],
+        sources=[str(Path(__file__).resolve().parent / "cuda_C++_tiled_matmul.cu")],
         extra_ldflags=[f"/LIBPATH:{CUDA_LIB_DIR}", "cudart.lib"],
     )
 
