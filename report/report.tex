@@ -6,6 +6,8 @@
 \usepackage{amsmath}
 \usepackage{siunitx}
 \usepackage{float}
+\usepackage{subcaption}
+\usepackage{placeins}
 \usepackage{hyperref}
 \usepackage[nameinlink,noabbrev]{cleveref}
 \usepackage{microtype}
@@ -15,8 +17,7 @@
 \hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue}
 
 \title{Comparing Matrix Multiplication Implementations Across CPU and GPU Platforms}
-\author{\textbf{YOUR NAME}\\[0.4em]
-        \small YOUR COURSE / INSTITUTION}
+\author{\textbf{Bassil Obeidi}}
 \date{\today}
 
 \begin{document}
@@ -27,91 +28,148 @@
 % measurements, main result, and the most important limitation. Avoid claiming
 % that the implementations are equivalent in precision or timing scope unless
 % you verify that they are.
+The purpose of this project is to act as an exploratory analysis into the world of parallel computing. We all hear about libraries like PyTorch, Numpy, even CUDA, but usually we simply invoke the libraries without thinking about whats going on under the hood. I must note that this analysis as it stands is extremely limited, however it has acted as an invaluable introduction to GPU kernels. I also want to note that I did not rely on any AI-generated code for the kernel codes, as I wanted to subject myself to the pedagogical (and frustrating) experience of writing these kernels the old fashion way, using documentation and video guides. I did however use AI-assisted code for writing the benchmarking script, generating the visuals and formatting this LaTeX report. This project compares various matrix multiplcation implementations across various GPU and CPU platforms. Using a RTX 4070 Super and a Intel i5 13600k, I compare computational speed for MatMul across CUDA, Triton, Pytorch, Numpy and Python implementations. Overall, a blocked Triton kernel outperformed all other implementations, yet suffered a massive warmup penalty despite this performance. PyTorch was the close runner up, with CUDA in third. These experiments used a fixed $1024 \times 1024$ matrix, and fixed block/grid sizes of $32 \times 32$ for Triton and CUDA. Overall, this project is an initial study with near limitless potential for expansion and additional experiments.
 \end{abstract}
 
 \section{Introduction}
 % TODO: Motivate matrix multiplication as a useful kernel for comparing
 % implementation strategies. State the research question and summarize what
 % the reader should learn from the comparison.
+Matrix multiplcation is the mathematical operation underpinning all modern AI and ML. Despite this, very few people legitimately understand what is happening under the hood, to turn an $O(n^{3})$ complexity algorithm into one of the most efficient, optimized and most frequently used operations in computing. Strassen's algorithm reduced the exponent to $\log_2 7 \approx 2.8074$, and recent OpenAI work established an upper bound of $9/4 = 2.25$ for the matrix-multiplication exponent over the complex numbers \cite{strassen69,openai225}. Hopefully, after reading this "study" a reader might gain some insight into the poorly documented and rarely thought about world of parallel computing.
 
 \section{Implementations}
 % TODO: Describe the seven implementations and point readers to their source:
 % pure Python loops; NumPy; PyTorch CPU/GPU; naive and blocked Triton; naive and
 % tiled CUDA C++. Explain how each GPU kernel maps output work to programs,
 % blocks, or threads, and what data reuse its tiling provides.
+This section will cover the 6 different MatMul implementations, as well as cover the differing kernel designs for Triton and CUDA.
+
+\subsection{Python}
+This is the true O($n^{3}$) monstrosity that we all know and love. It ain't efficient, but it works. Or that at least what I imagine someone who uses Python For loops and arrays to do MatMul on a $1024 \times 1024$ matrix would say. To make matters worse, Python by default is single-threaded and attempts to make the MatMul multi-threaded using Python's \texttt{Threading} module will be ineffective due to the Global Interpreter Lock. Anyways, optimizing MatMul using Python is it's own rabbit hole, worth a seperate research project (something something multiprocessing module and chunking). Let's just summarize by saying if you're doing MatMul using Python loops for anything other than a LeetCode problem, something's gone horribly wrong.
+
+\subsection{Numpy}
+Not much to say here. It works, it's fast and it doesn't require downlading a massive CUDA library. I'm not entirely sure how they managed it (future work), but props!
+
+\subsection{PyTorch}
+Ah PyTorch. I usually just import you and forget about it. From what I knew before this project, PyTorch has a CPU version as well as a GPU version. The GPU version requires a CUDA installation, the CPU version doesn't. After a bit of external research, it seems that PyTorch achieves faster than NumPy computation on "large" matrices, by using OpenMP and Intel MKL (Math Kernel Library) built in libraries. These libraries enable highly efficient multi-threaded operations on CPUs. 
+
+For the PyTorch GPU version, we all know that PyTorch GPU requires a CUDA install, and therefore logically, it generates some type of CUDA kernel to compute the MatMul. After some external research, it turns out that PyTorch doesn't actually generate and CUDA kernels itself, instead it calls CuBLAS (NVIDIA CUDA Basic Linear Algebra Subprograms). CuBLAS essentially contains a whole list of prewritten CUDA kernels, which it chooses the "optimal" one for your purposes by running some type of runtime heuristics, hadware runtime benchmarks and workspace contrainst. Neat!
+
+\subsection{Triton}
+Where the fun begins. Or pain. I'm not sure. Triton is an open-source GPU-programming library created by OpenAI back in 2021. From what I understand, its purpose is to enable developers to write custom GPU kernels (in Python syntax), without any C++ or CUDA knowledge prerequisites. Importantly, Triton kernels rival or match native CUDA C++ kernels. I chose to write two different Triton kernels. Compare to CUDA, Triton abstracts a decent amount of concepts such as memory management, individual thread handling and hardware commands. The fundemental procesing unit in Triton is a PID (Program ID), which I've learned is \textbf{not} equivalent to a thread. Triton also handles memory addressing using something called strides, which are basically a unit that describes how many memory indices are required to reach the next row-wise or column-wise element.
+
+\subsubsection{Naive Triton Kernel}
+This kernel assigns a unique PID to each element of the output array. So for a $1024 \times 1024$ output matrix, over a million PIDs get spawned in. Turns out this isn't that efficient (hey its called Naive for a reason). Importantly PIDs are \textbf{not the same as CUDA THREADS}. 
+
+\subsubsection{Blocked Triton Kernel}
+This kernel splits the output array in "blocks" to which each block is assigned one PID. This drastically reduces the number of PIDs spawned in. Each PID is reponsible for "striding" across the input arrays and accumulating the dot product values for each output element in its block. This approach results in much more efficient memory (re)usage through something called coalesced memory access, which is essentially less GPU DRAM trips (which are really slow). Additionally, neighbouring output elements share the same input rows/columns which means less local SRAM trips. Different block sizes and shapes result in different performance levels, but as a rule of thumb, square blocks are best.
+
+\subsection{CUDA}
+This kernel assigns a single GPU thread to each element of the output array. However, GPU threads are \textbf{not} Triton PIDs, so this doesn't end up being that bad. However, the memory efficiency of this approach is not great. Each thread is making individual requests that often wipe out past cached elements, which could be used by subsequent threads, resulting in unecessary trips to DRAM (SLOW).
+
+\subsubsection{Naive CUDA}
+This kernel sections off the output array into a grid, and each grid is assigned one thread. Very similar in concept to the blocked Triton kernel. Localized "tiles" cooperatively load groups of input elements to increase gpu cache usage and decrease global memory traffic
+
 
 \section{Experimental Method}
 \subsection{Hardware and software}
-% TODO: Record GPU model and memory, CPU model and core count, operating system,
-% Python, CUDA toolkit/driver, PyTorch, Triton, NumPy versions, and relevant
-% environment settings. Explain whether other GPU work was running.
+The project ran on Windows 11 Home with an NVIDIA GeForce RTX 4070 SUPER (12~GB GDDR6X) and an Intel Core i5-13600K (14 cores: 6 performance cores and 8 efficiency cores; 20 threads).
+
+The software environment used Python 3.12, CUDA Toolkit 12.6, and Visual Studio 2022. The Python packages were PyTorch 2.14.1 with CUDA 12.6, Triton for Windows 3.8.0.post29, NumPy 2.5.4, and Ninja 1.13.2.
 
 \subsection{Workload and correctness}
-% TODO: State matrix dimensions, dtypes, input generation, and number of runs.
-% Describe how outputs were checked against a trusted reference, including the
-% tolerance used. If you did not validate correctness, say so clearly.
+Every implementation multiplied two fixed $1024 \times 1024$ matrices whose entries were all $2.0$. NumPy, PyTorch, Triton, and CUDA used 32-bit floating-point inputs and outputs; the pure-Python implementation used nested lists of Python floating-point values. The saved run contains 30 timed samples for each implementation except pure Python, which has one.
+
+The benchmark code does not compare the computed outputs with a reference result, so correctness was not systematically validated and no numerical tolerance was applied.
 
 \subsection{Timing procedure}
-% TODO: Explain that CPU calls use host wall-clock timing and GPU samples use
-% CUDA graph timing aggregates. Inputs and output buffers are prepared outside
-% the GPU sample timing. Warm-up is recorded separately; CUDA extension loading
-% occurs before its timed warm-up, while Triton compilation can occur during its
-% first call. These measurements therefore have different timing scopes.
-%
-% State the sample count: the current saved run has 30 measured samples for
-% each implementation except pure Python, which has one. The CSV files are in
-% ../Data/benchmark_results.csv and ../Data/benchmark_raw_logs.csv.
+CPU operations were timed with Python's \texttt{time.perf\_counter()}. GPU samples were measured with \texttt{triton.testing.do\_bench\_cudagraph()}, which times CUDA graph replays and reports an average operation time. GPU inputs were created and transferred before the timed samples. The Triton and CUDA kernels reuse preallocated output matrices; PyTorch creates its output as part of each matrix multiplication call.
+
+Each implementation also had a separate warm-up call. GPU warm-ups were synchronized before and after timing. The CUDA extension was loaded before its warm-up, while the first Triton call could include compilation. Warm-up times therefore include different work across implementations.
 
 \subsection{Precision}
-% TODO: Document the precision modes used by PyTorch, Triton, and CUDA. In
-% particular, state whether Triton's tl.dot used TF32 or IEEE FP32 and whether
-% PyTorch matmul precision was explicitly configured. Do not describe this as
-% an equal-precision comparison unless the settings were matched.
+The array and tensor implementations used 32-bit floating-point inputs. The CUDA C++ kernels multiply and accumulate in FP32. PyTorch's matrix multiplication precision was not explicitly configured, so it used the default \texttt{highest} setting, with TF32 disabled \cite{pytorch}. The blocked Triton kernel calls \texttt{tl.dot} without setting an input precision; on this NVIDIA GPU, Triton's default is TF32, with an FP32 accumulator \cite{triton}. The naive Triton kernel accumulates its scalar products in FP32. PyTorch uses full FP32 precision.
 
 \section{Results}
-% TODO: Lead with the central observations. Quote mean and median timings in
-% milliseconds, identify sample counts, and describe variability. Distinguish
-% observed timing differences from explanations of those differences.
+The blocked Triton kernel had the lowest mean time in the saved run at 0.1067~ms, with PyTorch GPU close behind at 0.1140~ms. The difference between their means was small compared with the variation across their samples, so I would describe these results as nearly tied. The naive Triton kernel took 117.34~ms on average, while the blocked version took 0.1067~ms. The tiled CUDA kernel averaged 0.7203~ms, compared with 0.9387~ms for naive CUDA.
 
-\begin{figure}[p]
+On the CPU, PyTorch averaged 3.151~ms and NumPy averaged 3.543~ms. The pure-Python implementation took 54.29~s in its single measured sample.
+
+\begin{table}[ht]
   \centering
-  \includegraphics[width=0.98\textwidth,height=0.82\textheight,keepaspectratio]{01_overview.pdf}
-  \caption{Mean execution time across implementations. The horizontal axis is logarithmic. Python has one measured sample; other implementations have 30.}
-  \label{fig:overview}
+  \caption{Mean and median measured execution times. Python has one sample; all other implementations have 30.}
+  \label{tab:timing-summary}
+  \begin{tabular}{lrr}
+    \toprule
+    Implementation & Mean (ms) & Median (ms) \\
+    \midrule
+    Python & 54,285.96 & 54,285.96 \\
+    NumPy & 3.543 & 3.275 \\
+    PyTorch CPU & 3.151 & 3.169 \\
+    PyTorch GPU & 0.1140 & 0.1118 \\
+    Triton Blocked & 0.1067 & 0.1045 \\
+    Triton Naive & 117.34 & 117.14 \\
+    CUDA Naive & 0.9387 & 0.9160 \\
+    CUDA Tiled & 0.7203 & 0.7024 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The results show how the implementations performed for this fixed input and setup. They do not isolate the effect of kernel design from differences in library implementation and precision.
+
+\begin{figure}[!p]
+  \centering
+  \begin{subfigure}{0.98\textwidth}
+    \centering
+    \includegraphics[width=\linewidth,height=0.39\textheight,keepaspectratio]{01_overview.pdf}
+    \caption{Mean execution time across implementations. The horizontal axis is logarithmic. Python has one measured sample; other implementations have 30.}
+    \label{fig:overview}
+  \end{subfigure}
+  \par\vspace{0.5em}
+  \begin{subfigure}{0.98\textwidth}
+    \centering
+    \includegraphics[width=\linewidth,height=0.39\textheight,keepaspectratio]{02_gpu_detail.pdf}
+    \caption{GPU execution time comparisons. The Triton blocked-versus-naive panel uses a symmetric logarithmic vertical scale.}
+    \label{fig:gpu-detail}
+  \end{subfigure}
+  \caption{Overall and GPU-focused timing results.}
+  \label{fig:timing-comparisons}
 \end{figure}
-\clearpage
+\FloatBarrier
 
-\begin{figure}[p]
-  \centering
-  \includegraphics[width=0.98\textwidth,height=0.82\textheight,keepaspectratio]{02_gpu_detail.pdf}
-  \caption{GPU execution time comparisons. The Triton blocked-versus-naive panel uses a symmetric logarithmic vertical scale to show both timings.}
-  \label{fig:gpu-detail}
-\end{figure}
-\clearpage
+The first two GPU pairs show that blocked Triton and PyTorch GPU were close: their mean times differed by about 0.007~ms, which is similar in size to the variation across their samples. CUDA tiled averaged 0.720~ms compared with 0.939~ms for CUDA naive. The largest gap was between the two Triton kernels: the blocked version averaged about 1,100 times faster than the naive version in this run.
 
-\begin{figure}[p]
+\begin{figure}[!htbp]
   \centering
-  \includegraphics[width=0.98\textwidth,height=0.82\textheight,keepaspectratio]{03_distributions.pdf}
-  \caption{Individual measured timing samples and their distributions. Each panel uses its own horizontal scale.}
+  \includegraphics[width=0.98\textwidth,height=0.65\textheight,keepaspectratio]{03_distributions.pdf}
+  \caption{Individual measured timing samples and their distributions.}
   \label{fig:distributions}
 \end{figure}
-\clearpage
+\FloatBarrier
 
-\begin{figure}[p]
-  \centering
-  \includegraphics[width=0.98\textwidth,height=0.82\textheight,keepaspectratio]{04_warmups.pdf}
-  \caption{Separately recorded warm-up times. These are not included in the execution-time sample statistics.}
-  \label{fig:warmups}
-\end{figure}
-\clearpage
+The distributions show that PyTorch CPU timings were tightly grouped, while NumPy varied more, with samples from 2.852 to 7.248~ms. This spread pulls the NumPy mean above its median. The PyTorch GPU and blocked Triton samples cluster closely, matching the small difference between their summary statistics. 
 
-\begin{figure}[p]
+\begin{figure}[!p]
   \centering
-  \includegraphics[width=0.98\textwidth,height=0.82\textheight,keepaspectratio]{05_warmup_vs_mean.pdf}
-  \caption{Warm-up time and mean measured execution time for implementations with repeated samples. Circles show warm-ups; diamonds show measured means.}
-  \label{fig:warmup-vs-mean}
+  \begin{subfigure}{0.98\textwidth}
+    \centering
+    \includegraphics[width=\linewidth,height=0.39\textheight,keepaspectratio]{04_warmups.pdf}
+    \caption{Separately recorded warm-up times.}
+    \label{fig:warmups}
+  \end{subfigure}
+  \par\vspace{0.5em}
+  \begin{subfigure}{0.98\textwidth}
+    \centering
+    \includegraphics[width=\linewidth,height=0.39\textheight,keepaspectratio]{05_warmup_vs_mean.pdf}
+    \caption{Warm-up time compared with mean measured time for implementations with repeated samples.}
+    \label{fig:warmup-vs-mean}
+  \end{subfigure}
+  \caption{Warm-up measurements and their relationship to the timed samples.}
+  \label{fig:warmup-results}
 \end{figure}
-\clearpage
+\FloatBarrier
+
+Warm-up times varied substantially across implementations. The Triton naive and blocked kernels took about 134~ms and 88~ms, respectively, while the PyTorch GPU warm-up took about 55~ms; the pure-Python warm-up took nearly 69 seconds. Triton compilation can contribute to its first-call warm-up, while CUDA extension loading happened before the CUDA warm-up was timed. These values help explain first-use cost.
 
 \section{Discussion}
 % TODO: Interpret the naive-versus-blocked Triton results in terms of work per
@@ -119,18 +177,35 @@
 % measurements support and what they cannot isolate (for example, tiling versus
 % precision or library implementation).
 
+There were three main findings that I'd like to explore.
+
+\subsection{Why is naive Triton so SLOW?}
+This was a surpising finding. The naive Triton kernel is around 1000x slower than the blocked version. Slower even than CPU implementations. Before completing this project I assumed that even the worst GPU kernel would be miles faster than a CPU implementation. Turns out that assumption was wrong. So what went wrong? After looking online there a number of explanations, and likely all of them contribute. Things like severy memory stall, low GPU tensor core usage, and globabl memory access overhead. Additionally, this kernel does element by element $*$ Python multiplication, which is apparently super unoptimized versus something like tl.dot.
+
+\subsection{Why is blocked Triton so FAST?}
+Another suprising find. From my preconceptions, I totally expected CUDA to beat Triton, or at least the tiled cuda to beat Triton. Furthermore, I also expected Pytorch to beat my blocked Triton kernel. As to why they didn't, im not entirely sure. However I'd like to dedicate future research to figuring out why.
+
+\subsection{Triton and PyTorch sure love to warmup! CUDA is ICE COLD}
+Triton completely dominated the warmup graph (in a bad way). Despite blocked and naive Triton varying 1000x, their warmup times were within the same order of magnitude. Similar behaviour was exhibited by PyTorch GPU which might related. CUDA suffers little to no warmup penalty, seemingly the opposite of Triton and PyTorch GPU.
+
+Overall, all the findings above most definitely warrant further exploration into the causes and explanations for such interesting and varied behaviour.
+
+
 \section{Limitations}
-% TODO: Discuss correctness coverage, single-size/single-device scope, different
-% CPU/GPU timing methods, precision differences, warm-up semantics, and the
-% single pure-Python sample. Add any other limitations specific to your run.
+This was a small experiment on one computer, one GPU, and one matrix size. Both input matrices were filled with the same value, so the results do not show how these implementations behave on varied data, other dimensions, or other hardware. I also did not compare any output against a reference result, so the benchmark records speed without a systematic correctness check.
+
+The timing methods were not identical across devices. CPU calls were measured with a host timer, while GPU samples used CUDA graph replays; these GPU measurements emphasize repeated execution and do not include the usual per-call Python launch overhead. The GPU implementations also used different output handling, and the separate warm-up calls included different work, such as Triton compilation. The reported times are therefore useful for comparing the recorded setup, but are not a fully controlled end-to-end comparison.
+
+Precision was another difference. PyTorch used its default FP32 matmul setting, while the blocked Triton kernel used TF32 inputs with FP32 accumulation. In particular, the blocked-versus-naive Triton result combines a change in kernel design with a change in precision, so this run cannot attribute the full speed difference to blocking alone. 
+
+\section{Future Work}
+The next step would be to test more input sizes and vary the block and grid sizes, both manually and with Triton and NVIDIA's tuning tools. I would also check each output against a reference, measure its numerical error, and repeat the benchmarks with different precision settings. I would study how the libraries choose and implement their matrix multiplication kernels in more depth, so explanations for the measured results are based on what the libraries are actually doing rather than speculation. Finally, I would compare these implementations with other GPU libraries such as CUTLASS and AMD ROCm.
 
 \section{Conclusion}
-% TODO: Answer the research question in a few sentences and identify one
-% specific improvement or follow-up experiment.
+GPUs are extremely fast processing units, however the way in which they are programatically utilized defines their real world performance. Different libraries offer different methods of defining this programatic usage, however their is a cost/benefit tradeoff associated with each. Understanding this paradigm is critical for developing and serving efficient GPU accelerated software at scale.
 
 \section*{Reproducibility}
-% TODO: Give the command used to run the benchmark and identify the commit or
-% archived source version. Results are written under ../Data/.
+See readme.
 
 \begin{thebibliography}{9}
 \bibitem{triton}
@@ -144,6 +219,16 @@ PyTorch contributors, \emph{PyTorch documentation},
 \bibitem{cuda}
 NVIDIA, \emph{CUDA C++ Programming Guide},
 \url{https://docs.nvidia.com/cuda/cuda-c-programming-guide/}.
+
+\bibitem{strassen69}
+V. Strassen, \emph{Gaussian elimination is not optimal},
+\emph{Numerische Mathematik} 13 (1969), 354--356.
+\url{https://doi.org/10.1007/BF02165411}.
+
+\bibitem{openai225}
+OpenAI, \emph{An Upper Bound of $9/4$ for the Matrix Multiplication Exponent},
+preprint, October 2, 2026.
+\url{https://github.com/openai/math/blob/main/preprints/Matrix-Multiplication-Nine-Fourths-October-2-2026/build/paper.tex}.
 \end{thebibliography}
 
 \end{document}
