@@ -35,7 +35,7 @@ The purpose of this project is to act as an exploratory analysis into the world 
 % TODO: Motivate matrix multiplication as a useful kernel for comparing
 % implementation strategies. State the research question and summarize what
 % the reader should learn from the comparison.
-Matrix multiplcation is the mathematical operation underpinning all modern AI and ML. Despite this, very few people legitimately understand what is happening under the hood, to turn an $O(n^{3})$ complexity algorithm into one of the most efficient, optimized and most frequently used operations in computing. Strassen's algorithm reduced the exponent to $\log_2 7 \approx 2.8074$, and recent OpenAI work established an upper bound of $9/4 = 2.25$ for the matrix-multiplication exponent over the complex numbers \cite{strassen69,openai225}. Hopefully, after reading this "study" a reader might gain some insight into the poorly documented and rarely thought about world of parallel computing.
+Matrix multiplcation is the mathematical operation underpinning modern AI and ML. Despite this, very few people legitimately understand what is happening under the hood, to turn a O($n^{3}$) complexity algorithm (or O($n^{2.8074}$) for square matrices \cite{strassen69}, O($n^{2.25}$) for complex matrices \cite{openai225}), into one of the most efficient, optimized and most frequently used operations in computing. Hopefully, after reading this ''study'' a reader might gain some insight into the poorly documented and rarely thought about world of parallel computing.
 
 \section{Implementations}
 % TODO: Describe the seven implementations and point readers to their source:

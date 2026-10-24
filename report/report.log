@@ -1,9 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.8.23)  24 OCT 2026 16:31
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.8.23)  24 OCT 2026 16:59
 entering extended mode
  restricted \write18 enabled.
+ file:line:error style messages enabled.
  %&-line parsing enabled.
-**./report.tex
-(report.tex
+**c:/Users/Amer/Desktop/Git/gpu-kernels/report/report.tex
+(c:/Users/Amer/Desktop/Git/gpu-kernels/report/report.tex
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
 (C:\Users\Amer\AppData\Local\Programs\MiKTeX\tex/latex/base\article.cls
@@ -562,28 +563,28 @@ File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman
 
 {C:/Users/Amer/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] [2]
 [3]
-<figures/01_overview.pdf, id=123, 1011.78pt x 578.16pt>
+<figures/01_overview.pdf, id=124, 1011.78pt x 578.16pt>
 File: figures/01_overview.pdf Graphic file (type pdf)
 <use figures/01_overview.pdf>
 Package pdftex.def Info: figures/01_overview.pdf  used on input line 124.
 (pdftex.def)             Requested size: 443.91862pt x 253.66777pt.
-<figures/02_gpu_detail.pdf, id=124, 1011.78pt x 578.16pt>
+<figures/02_gpu_detail.pdf, id=125, 1011.78pt x 578.16pt>
 File: figures/02_gpu_detail.pdf Graphic file (type pdf)
 <use figures/02_gpu_detail.pdf>
 Package pdftex.def Info: figures/02_gpu_detail.pdf  used on input line 131.
 (pdftex.def)             Requested size: 443.91862pt x 253.66777pt.
  [4] [5 <./figures/01_overview.pdf> <./figures/02_gpu_detail.pdf>]
-<figures/03_distributions.pdf, id=207, 1011.78pt x 722.7pt>
+<figures/03_distributions.pdf, id=208, 1011.78pt x 722.7pt>
 File: figures/03_distributions.pdf Graphic file (type pdf)
 <use figures/03_distributions.pdf>
 Package pdftex.def Info: figures/03_distributions.pdf  used on input line 144.
 (pdftex.def)             Requested size: 460.36063pt x 328.82901pt.
-<figures/04_warmups.pdf, id=208, 1011.78pt x 578.16pt>
+<figures/04_warmups.pdf, id=209, 1011.78pt x 578.16pt>
 File: figures/04_warmups.pdf Graphic file (type pdf)
 <use figures/04_warmups.pdf>
 Package pdftex.def Info: figures/04_warmups.pdf  used on input line 156.
 (pdftex.def)             Requested size: 443.91862pt x 253.66777pt.
-<figures/05_warmup_vs_mean.pdf, id=209, 1011.78pt x 578.16pt>
+<figures/05_warmup_vs_mean.pdf, id=210, 1011.78pt x 578.16pt>
 File: figures/05_warmup_vs_mean.pdf Graphic file (type pdf)
 <use figures/05_warmup_vs_mean.pdf>
 Package pdftex.def Info: figures/05_warmup_vs_mean.pdf  used on input line 163.
@@ -620,27 +621,29 @@ Package rerunfilecheck Info: File `report.out' has not changed.
 (rerunfilecheck)             Checksum: 4351F73EB5A51931AF723B740ED73DF4;3124.
  ) 
 Here is how much of TeX's memory you used:
- 19101 strings out of 467871
- 382731 string characters out of 5418860
- 792437 words of memory out of 5000000
+ 19105 strings out of 467871
+ 382882 string characters out of 5418860
+ 791437 words of memory out of 5000000
  47657 multiletter control sequences out of 15000+600000
- 638551 words of font info for 131 fonts, out of 8000000 for 9000
+ 638602 words of font info for 132 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,8n,80p,1515b,1048s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,8n,80p,1558b,1048s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/Amer/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/c
 mbx10.pfb><C:/Users/Amer/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfo
 nts/cm/cmbx12.pfb><C:/Users/Amer/AppData/Local/Programs/MiKTeX/fonts/type1/publ
 ic/amsfonts/cm/cmmi10.pfb><C:/Users/Amer/AppData/Local/Programs/MiKTeX/fonts/ty
-pe1/public/amsfonts/cm/cmr10.pfb><C:/Users/Amer/AppData/Local/Programs/MiKTeX/f
-onts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/Amer/AppData/Local/Programs/M
-iKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/Amer/AppData/Local/Pro
-grams/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/Amer/AppData/Loc
-al/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/Amer/App
-Data/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/
-Amer/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on report.pdf (9 pages, 565251 bytes).
+pe1/public/amsfonts/cm/cmmi8.pfb><C:/Users/Amer/AppData/Local/Programs/MiKTeX/f
+onts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/Amer/AppData/Local/Programs/M
+iKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/Amer/AppData/Local/Pro
+grams/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/Amer/AppData/Lo
+cal/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/Amer/AppD
+ata/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/A
+mer/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:
+/Users/Amer/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10
+.pfb>
+Output written on report.pdf (9 pages, 573609 bytes).
 PDF statistics:
- 409 PDF objects out of 1000 (max. 8388607)
+ 414 PDF objects out of 1000 (max. 8388607)
  44 named destinations out of 1000 (max. 500000)
  29394 words of extra memory for PDF output out of 29859 (max. 10000000)
 

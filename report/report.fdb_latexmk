@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1792873890.81377 "c:/Users/Amer/Desktop/Git/gpu-kernels/report/report.tex" "report.pdf" "report" 1792873892.211 0
+["pdflatex"] 1792875554.21565 "c:/Users/Amer/Desktop/Git/gpu-kernels/report/report.tex" "report.pdf" "report" 1792875555.64774 0
   "C:/Users/Amer/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1792871945 157893 96e83dc0bfe3923fb6843f0e12318128 ""
   "C:/Users/Amer/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1787522329 13333003 d4ff3d4b00c4af1af0d5afe6142af747 ""
   "C:/Users/Amer/AppData/Local/Programs/MiKTeX/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1233951848 1004 54797486969f23fa377b128694d548df ""
@@ -24,6 +24,7 @@
   "C:/Users/Amer/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb" 1247596666 34811 78b52f49e893bcba91bd7581cdc144c0 ""
   "C:/Users/Amer/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb" 1247596666 32080 340ef9bf63678554ee606688e7b5339d ""
   "C:/Users/Amer/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1247596667 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
+  "C:/Users/Amer/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb" 1247596666 35469 dcf3a5f2fc1862f5952e3ee5eb1d98c4 ""
   "C:/Users/Amer/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1247596667 35752 024fb6c41858982481f6968b5fc26508 ""
   "C:/Users/Amer/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb" 1247596667 32722 d7379af29a190c3f453aba36302ff5a9 ""
   "C:/Users/Amer/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb" 1247596666 32362 bc3f3eec7ab7d65fe700963d4017d32c ""
@@ -93,15 +94,15 @@
   "C:/Users/Amer/AppData/Local/Programs/MiKTeX/tex/latex/translations/dicts/translations-basic-dictionary-english.trsl" 1644048522 5588 0c1628daf15f4411ff1f463114c634a3 ""
   "C:/Users/Amer/AppData/Local/Programs/MiKTeX/tex/latex/translations/translations.sty" 1644048522 44247 2188b95d0ee74e31eca4d316263c58a7 ""
   "C:/Users/Amer/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
-  "c:/Users/Amer/Desktop/Git/gpu-kernels/report/report.tex" 1792873888 20234 a00547ee7f8f357cd9a3f597ef570600 ""
+  "c:/Users/Amer/Desktop/Git/gpu-kernels/report/report.tex" 1792875553 20113 80b9bda967948dfd785a4bfa2a3d09cc ""
   "figures/01_overview.pdf" 1792794661 84574 dde092c0ad174e1aa2d755e9d45b8056 ""
   "figures/02_gpu_detail.pdf" 1792794665 74048 466e58afb4938982bc0d3092e5ece9e2 ""
   "figures/03_distributions.pdf" 1792794672 59633 182d030805841cb4aef66c1e6d7ab86e ""
   "figures/04_warmups.pdf" 1792794676 66328 8e3a08f2818d3fb6786f04b8787ec764 ""
   "figures/05_warmup_vs_mean.pdf" 1792794681 93360 ee21844d5e6ee0adf913bfbe1e25cdbc ""
-  "report.aux" 1792873891 6494 f21029c021ee3b4d857f219e4db44944 "pdflatex"
-  "report.out" 1792873891 3124 4351f73eb5a51931af723b740ed73df4 "pdflatex"
-  "report.tex" 1792873888 20234 a00547ee7f8f357cd9a3f597ef570600 ""
+  "report.aux" 1792875555 6494 f21029c021ee3b4d857f219e4db44944 "pdflatex"
+  "report.out" 1792875555 3124 4351f73eb5a51931af723b740ed73df4 "pdflatex"
+  "report.tex" 1792875553 20113 80b9bda967948dfd785a4bfa2a3d09cc ""
   (generated)
   "report.aux"
   "report.log"
